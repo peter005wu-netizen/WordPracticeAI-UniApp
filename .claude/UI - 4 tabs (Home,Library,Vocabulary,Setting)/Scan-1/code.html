@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Word Recognition &amp; Statistics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body {
+            font-family: 'Lexend', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(19, 91, 236, 0.2);
+            border-radius: 10px;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#111318]">
+<div class="relative flex h-screen w-full max-w-[480px] mx-auto flex-col bg-white overflow-hidden shadow-2xl">
+<header class="flex items-center bg-white/95 backdrop-blur-md sticky top-0 z-30 p-4 border-b border-gray-100 justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gray-700 cursor-pointer" data-icon="arrow_back">arrow_back</span>
+<h1 class="text-[#111318] text-lg font-bold tracking-tight">Word Recognition &amp; Statistics</h1>
+</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-gray-700 cursor-pointer" data-icon="settings">settings</span>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto custom-scrollbar pb-32">
+<div class="px-4 py-6 bg-gradient-to-b from-gray-50 to-white">
+<div class="flex items-center justify-between mb-4">
+<div>
+<p class="text-sm text-gray-500 font-medium">Total Identified Words</p>
+<h2 class="text-4xl font-bold text-primary">48</h2>
+</div>
+<div class="flex flex-col items-end">
+<span class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-1 rounded-full uppercase mb-1">AI Scan Complete</span>
+<p class="text-xs text-gray-400">Scan duration: 1.2s</p>
+</div>
+</div>
+<div class="flex items-center justify-between bg-gray-100/50 p-1 rounded-xl w-fit">
+<button class="px-4 py-1.5 rounded-lg text-sm font-semibold bg-white shadow-sm text-primary">UK</button>
+<button class="px-4 py-1.5 rounded-lg text-sm font-semibold text-gray-500">US</button>
+</div>
+</div>
+<div class="px-4 py-2 flex items-center justify-between sticky top-0 bg-white z-20 border-b border-gray-50">
+<div class="flex items-center gap-2">
+<input class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary" id="selectAll" type="checkbox"/>
+<label class="text-sm font-semibold text-gray-700" for="selectAll">Select All (12)</label>
+</div>
+<div class="flex gap-2">
+<span class="material-symbols-outlined text-gray-400 text-xl" data-icon="sort">sort</span>
+<span class="material-symbols-outlined text-gray-400 text-xl" data-icon="filter_list">filter_list</span>
+</div>
+</div>
+<div class="flex flex-col divide-y divide-gray-50">
+<div class="flex items-start gap-4 p-4 hover:bg-gray-50 transition-colors">
+<div class="pt-1">
+<input checked="" class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary" type="checkbox"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<h3 class="text-lg font-bold text-gray-900 truncate">Sustainability</h3>
+<span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">IELTS</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5">
+<p class="text-primary font-medium text-sm">/səˌsteɪ.nəˈbɪl.ə.ti/</p>
+<span class="material-symbols-outlined text-primary text-lg cursor-pointer" data-icon="volume_up">volume_up</span>
+</div>
+<p class="text-gray-500 text-sm mt-1 line-clamp-2">The ability to be maintained at a certain rate or level; ecological balance.</p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-4 hover:bg-gray-50 transition-colors">
+<div class="pt-1">
+<input checked="" class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary" type="checkbox"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<h3 class="text-lg font-bold text-gray-900 truncate">Comprehensive</h3>
+<span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">PET</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5">
+<p class="text-primary font-medium text-sm">/ˌkɒm.prɪˈhen.sɪv/</p>
+<span class="material-symbols-outlined text-primary text-lg cursor-pointer" data-icon="volume_up">volume_up</span>
+</div>
+<p class="text-gray-500 text-sm mt-1 line-clamp-2">Complete and including everything that is necessary.</p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-4 hover:bg-gray-50 transition-colors">
+<div class="pt-1">
+<input checked="" class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary" type="checkbox"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<h3 class="text-lg font-bold text-gray-900 truncate">Innovation</h3>
+<span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">KET</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5">
+<p class="text-primary font-medium text-sm">/ˌɪn.əˈveɪ.ʃən/</p>
+<span class="material-symbols-outlined text-primary text-lg cursor-pointer" data-icon="volume_up">volume_up</span>
+</div>
+<p class="text-gray-500 text-sm mt-1 line-clamp-2">A new method, idea, product, etc. resulting in improvement.</p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-4 hover:bg-gray-50 transition-colors opacity-70">
+<div class="pt-1">
+<input class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary" type="checkbox"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<h3 class="text-lg font-bold text-gray-900 truncate">Contextual</h3>
+<span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">NEW</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5">
+<p class="text-gray-400 font-medium text-sm">/kənˈteks.tʃu.əl/</p>
+<span class="material-symbols-outlined text-gray-300 text-lg cursor-pointer" data-icon="volume_up">volume_up</span>
+</div>
+<p class="text-gray-500 text-sm mt-1 line-clamp-2">Depending on or relating to the circumstances that form the setting for an event.</p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-4 hover:bg-gray-50 transition-colors">
+<div class="pt-1">
+<input checked="" class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary" type="checkbox"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<h3 class="text-lg font-bold text-gray-900 truncate">Hypothesis</h3>
+<span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">IELTS</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5">
+<p class="text-primary font-medium text-sm">/haɪˈpɒθ.ə.sɪs/</p>
+<span class="material-symbols-outlined text-primary text-lg cursor-pointer" data-icon="volume_up">volume_up</span>
+</div>
+<p class="text-gray-500 text-sm mt-1 line-clamp-2">A proposed explanation made on the basis of limited evidence.</p>
+</div>
+</div>
+</div>
+</main>
+<div class="absolute bottom-0 left-0 right-0 p-6 bg-white/95 backdrop-blur-2xl border-t border-gray-100 flex flex-col gap-3 z-40">
+<button class="w-full bg-primary text-white h-14 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-xl shadow-primary/20 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+                Generate Exercises (32)
+            </button>
+<div class="mx-auto w-32 h-1.5 bg-gray-200 rounded-full mt-2"></div>
+</div>
+</div>
+
+</body></html>
