@@ -1,12 +1,47 @@
 {
   "pages": [
-    "pages/index/index"
+    "pages/index/index",
+    "pages/library/library",
+    "pages/vocabulary/vocabulary",
+    "pages/settings/settings"
   ],
   "window": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "uni-app",
-    "navigationBarBackgroundColor": "#F8F8F8",
-    "backgroundColor": "#F8F8F8"
+    "navigationBarTitleText": "Learning App",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundColor": "#F8F9FA"
+  },
+  "tabBar": {
+    "color": "#9CA3AF",
+    "selectedColor": "#2563EB",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "Home",
+        "iconPath": "static/tab-home.png",
+        "selectedIconPath": "static/tab-home-active.png"
+      },
+      {
+        "pagePath": "pages/library/library",
+        "text": "Library",
+        "iconPath": "static/tab-library.png",
+        "selectedIconPath": "static/tab-library-active.png"
+      },
+      {
+        "pagePath": "pages/vocabulary/vocabulary",
+        "text": "Vocabulary",
+        "iconPath": "static/tab-vocabulary.png",
+        "selectedIconPath": "static/tab-vocabulary-active.png"
+      },
+      {
+        "pagePath": "pages/settings/settings",
+        "text": "Settings",
+        "iconPath": "static/tab-settings.png",
+        "selectedIconPath": "static/tab-settings-active.png"
+      }
+    ]
   },
   "usingComponents": {}
 }

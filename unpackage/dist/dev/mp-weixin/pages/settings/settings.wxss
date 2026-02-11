@@ -1,0 +1,29 @@
+
+.container.data-v-7fad0a1c {
+	padding: 20rpx 32rpx;
+	background-color: #F8F9FA;
+	min-height: 100vh;
+}
+.header.data-v-7fad0a1c {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 24rpx;
+}
+.title.data-v-7fad0a1c {
+	font-size: 48rpx;
+	font-weight: bold;
+	color: #1A1A1A;
+}
+.save-btn.data-v-7fad0a1c {
+	color: #2563EB;
+	font-size: 32rpx;
+}
+.content.data-v-7fad0a1c {
+	padding: 40rpx;
+	text-align: center;
+}
+.placeholder.data-v-7fad0a1c {
+	color: #9CA3AF;
+	font-size: 28rpx;
+}

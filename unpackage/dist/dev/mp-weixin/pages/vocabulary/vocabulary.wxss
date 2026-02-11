@@ -1,0 +1,22 @@
+
+.container.data-v-4691bb91 {
+	padding: 20rpx 32rpx;
+	background-color: #F8F9FA;
+	min-height: 100vh;
+}
+.header.data-v-4691bb91 {
+	margin-bottom: 24rpx;
+}
+.title.data-v-4691bb91 {
+	font-size: 48rpx;
+	font-weight: bold;
+	color: #1A1A1A;
+}
+.content.data-v-4691bb91 {
+	padding: 40rpx;
+	text-align: center;
+}
+.placeholder.data-v-4691bb91 {
+	color: #9CA3AF;
+	font-size: 28rpx;
+}
