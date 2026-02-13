@@ -22,8 +22,9 @@
 		</view>
 
 		<view class="button-group">
-			<button class="btn-back" @tap="goBack">返回首页</button>
-			<button class="btn-retake" @tap="retake">重新拍照</button>
+			
+			<button class="btn-back" @tap="retake">重新拍照</button>
+			<button class="btn-retake"  @tap="goRecognition">识别词汇</button>
 		</view>
 	</view>
 </template>
@@ -44,6 +45,12 @@ export default {
 	methods: {
 		goBack() {
 			uni.navigateBack();
+		},
+		goRecognition() {
+			// 跳转到词汇识别页面，传递图片路径
+			uni.navigateTo({
+				url: `/pages/scan/RecognitionPage?image=${encodeURIComponent(this.imagePath)}`
+			});
 		},
 		retake() {
 			uni.chooseImage({

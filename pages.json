@@ -40,6 +40,13 @@
 				"navigationBarTitleText": "",
 				"navigationBarBackgroundColor": "#F8F9FA"
 			}
+		},
+		{
+			"path": "pages/scan/RecognitionPage",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationBarBackgroundColor": "#F8F9FA"
+			}
 		}
 	],
 	"globalStyle": {
