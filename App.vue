@@ -1,4 +1,6 @@
 <script>
+	import config from '@/config/index.js'
+
 	export default {
 		data() {
 			return {
@@ -8,6 +10,7 @@
 		// 全局变量，可以通过 getApp().globalData 访问
 		globalData: {
 			openid: '',
+			token: '',
 			userInfo: null
 		},
 		onLaunch: function() {
@@ -32,9 +35,9 @@
 					console.log('正在登录中，请勿重复调用')
 					return
 				}
-				
+
 				this.isLogining = true
-				
+
 				uni.login({
 					success: (res) => {
 						console.log('登录成功，code:', res.code)
@@ -50,22 +53,43 @@
 					}
 				})
 			},
-			
+
 			/**
-			 * 发送授权码到后端
+			 * 发送授权码到后端，换取 token 和 openId
 			 * @param {String} code - 微信授权码
 			 */
 			sendCodeToServer(code) {
-				//TODO: 调用后端接口，使用 code 换取 session_key 和 openid
-				//示例：
 				uni.request({
-				  url: 'http://localhost:5007/api/login',
-				  method: 'POST',
-				  data: { code },
-				  success: (res) => {
-				    console.log('登录结果:', res.data)
-				    // 保存 token 或 session
-				  }
+					url: `${config.BASE_URL}/api/login`,
+					method: 'POST',
+					data: { code },
+					success: (res) => {
+						console.log('登录结果:', res.data)
+						const data = res.data
+						if (data && data.token) {
+							uni.setStorageSync('token', data.token)
+							this.globalData.token = data.token
+						}
+						if (data && data.openId) {
+							uni.setStorageSync('openid', data.openId)
+							this.globalData.openid = data.openId
+						}
+
+						// 保存用户信息（头像和昵称）
+						if (data && data.userData && data.userData.attributeColumns) {
+							const attrs = data.userData.attributeColumns
+							const userInfo = {
+								nickName: attrs.NickName?.value || '未登录',
+								avatarUrl: attrs.AvatarUrl?.value || ''
+							}
+							console.log('保存用户信息:', userInfo)
+							uni.setStorageSync('userInfo', userInfo)
+							this.globalData.userInfo = userInfo
+						}
+					},
+					fail: (err) => {
+						console.error('发送code到服务器失败:', err)
+					}
 				})
 			}
 		}
