@@ -31,7 +31,7 @@
 			"path": "pages/settings/settings",
 			"style": {
 				"navigationBarTitleText": "Settings",
-				"navigationBarBackgroundColor": "#FFFFFF"
+				"navigationStyle": "custom"
 			}
 		},
 		{
@@ -51,7 +51,7 @@
 	"tabBar": {
 		"color": "#9CA3AF",
 		"selectedColor": "#2563EB",
-		"backgroundColor": "#FFFFFF",
+		"backgroundColor": "#1efffe",
 		"borderStyle": "white",
 		"list": [
 			{

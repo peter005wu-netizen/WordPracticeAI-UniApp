@@ -1,26 +1,26 @@
 <template>
 	<view class="container">
-		<view class="header">
-			<text class="title">Settings</text>
-			<text class="save-btn">Save</text>
-		</view>
-		
-		<!-- 用户信息区域 -->
-		<view class="user-info-section">
-			<view class="user-card">
-				<view class="user-avatar" @click="updateUserAvatar">
-					<image :src="userInfo.avatarUrl || '/static/default-avatar.png'" mode="aspectFill" class="avatar-img"></image>
-					<view class="change-overlay">
-						<text class="overlay-text">点击更换头像</text>
+		<!-- Custom Navigation Bar -->
+		<view class="custom-navbar">
+			<view class="navbar-content">
+				<view class="user-info">
+					<button open-type="chooseAvatar" @chooseavatar="onChooseAvatar" class="avatar-btn">
+						<image class="avatar" :src="avatarUrl || '/static/avatar.png'" mode="aspectFill"></image>
+					</button>
+					<view class="user-text">
+						<input
+							type="nickname"
+							class="user-name-input"
+							:value="userName"
+							placeholder="点击输入昵称"
+							@blur="onNicknameChange"
+						/>
+						<text class="user-level">ACADEMIC LEVEL: SENIOR</text>
 					</view>
-				</view>
-				<view class="user-details" @click="updateUserNickname">
-					<text class="username">{{ userInfo.nickName || '点击设置昵称' }}</text>
-					<text class="user-id">ID: {{ userInfo.openId || '未登录' }}</text>
 				</view>
 			</view>
 		</view>
-		
+
 		<view class="content">
 			<text class="placeholder">Settings page content</text>
 		</view>
@@ -29,117 +29,222 @@
 
 <script>
 import { updateUserProfile } from '@/api/user.js'
+import config from '@/config/index.js'
 
 export default {
 	data() {
 		return {
-			userInfo: {
-				nickName: '',
-				avatarUrl: '',
-				openId: ''
+			userName: '未登录',
+			avatarUrl: ''
+		}
+	},
+	onShow() {
+		// 每次页面显示时从缓存读取用户信息
+		const info = uni.getStorageSync('userInfo');
+		if (info && info.nickName) {
+			this.userName = info.nickName;
+			this.avatarUrl = info.avatarUrl || '';
+		} else {
+			const app = getApp();
+			if (app && app.globalData && app.globalData.userInfo) {
+				this.userName = app.globalData.userInfo.nickName || '未登录';
+				this.avatarUrl = app.globalData.userInfo.avatarUrl || '';
 			}
 		}
 	},
-	onLoad() {
-		this.loadUserInfo()
-	},
 	methods: {
 		/**
-		 * 加载用户信息
+		 * 昵称输入完成事件
 		 */
-		loadUserInfo() {
-			const userInfo = uni.getStorageSync('userInfo') || {}
-			this.userInfo = {
-				nickName: userInfo.nickName || '',
-				avatarUrl: userInfo.avatarUrl || '',
-				openId: userInfo.openId || userInfo.userId || ''
-			}
-		},
+		async onNicknameChange(e) {
+			const newNickname = e.detail.value.trim();
 
-		/**
-		 * 更新用户头像
-		 */
-		async updateUserAvatar() {
-			try {
-				// 获取用户微信头像
-				const userInfo = await this.getWechatUserInfo()
-				
-				if (userInfo) {
-					// 更新本地状态
-					this.userInfo.avatarUrl = userInfo.avatarUrl
-					
-					// 准备发送到后端的数据
-					const payload = {
-						UserId: this.userInfo.openId,
-						AvatarUrl: userInfo.avatarUrl,
-						NickName: this.userInfo.nickName || userInfo.nickName
-					}
-					
-					// 发送到后端
-					await updateUserProfile(payload)
-					uni.showToast({ title: '头像更新成功', icon: 'success' })
+			if (!newNickname) {
+				uni.showToast({
+					title: '昵称不能为空',
+					icon: 'none'
+				});
+				return;
+			}
+
+			// 更新显示
+			this.userName = newNickname;
+
+			// 获取用户 openid
+			const app = getApp();
+			const userId = uni.getStorageSync('openid') || (app && app.globalData && app.globalData.openid);
+
+			// 保存到本地缓存
+			const userInfo = {
+				nickName: newNickname,
+				avatarUrl: this.avatarUrl
+			};
+			uni.setStorageSync('userInfo', userInfo);
+
+			// 同步到全局数据
+			if (app && app.globalData) {
+				app.globalData.userInfo = userInfo;
+			}
+
+			// 如果有 userId，同步到服务器
+			if (userId) {
+				try {
+					await updateUserProfile({
+						userId: userId,
+						nickName: newNickname,
+						avatarUrl: null // 头像不变
+					});
+					uni.showToast({
+						title: '昵称已保存',
+						icon: 'success'
+					});
+				} catch (error) {
+					console.error('保存昵称到服务器失败:', error);
+					// 显示友好的错误提示，但不阻断用户操作
+					uni.showToast({
+						title: '同步到服务器失败，数据已保存到本地',
+						icon: 'none',
+						duration: 2000
+					});
 				}
-			} catch (error) {
-				console.error('更新头像失败:', error)
-				uni.showToast({ title: '更新失败', icon: 'none' })
 			}
 		},
 
 		/**
-		 * 更新用户昵称
+		 * 上传头像到服务器
+		 * @param {String} tempFilePath - 临时文件路径
+		 * @returns {Promise<String>} 返回服务器返回的头像 URL
 		 */
-		async updateUserNickname() {
-			try {
-				// 获取用户微信昵称
-				const userInfo = await this.getWechatUserInfo()
-				
-				if (userInfo) {
-					// 更新本地状态
-					this.userInfo.nickName = userInfo.nickName
-					
-					// 准备发送到后端的数据
-					const payload = {
-						UserId: this.userInfo.openId,
-						AvatarUrl: this.userInfo.avatarUrl || userInfo.avatarUrl,
-						NickName: userInfo.nickName
-					}
-					
-					// 发送到后端
-					await updateUserProfile(payload)
-					uni.showToast({ title: '昵称更新成功', icon: 'success' })
-				}
-			} catch (error) {
-				console.error('更新昵称失败:', error)
-				uni.showToast({ title: '更新失败', icon: 'none' })
-			}
-		},
-
-		/**
-		 * 获取微信用户信息
-		 */
-		getWechatUserInfo() {
+		async uploadAvatarToServer(tempFilePath) {
 			return new Promise((resolve, reject) => {
-				// 需要用户授权才能获取用户信息
-				uni.getUserProfile({
-					desc: '用于完善用户资料',
-					success: (res) => {
-						const userInfo = res.userInfo
-						resolve({
-							nickName: userInfo.nickName,
-							avatarUrl: userInfo.avatarUrl
-						})
+				// 从本地存储获取token
+				const token = uni.getStorageSync('token');
+
+				if (!token) {
+					reject(new Error('未登录'));
+					return;
+				}
+
+				// 获取 openid
+				const app = getApp();
+				const openid = uni.getStorageSync('openid') ||
+				               (app && app.globalData && app.globalData.openid);
+
+				if (!openid) {
+					reject(new Error('未获取到用户ID'));
+					return;
+				}
+
+				const uploadUrl = `${config.BASE_URL}/api/user/avatar`;
+				console.log('准备上传到:', uploadUrl);
+				uni.uploadFile({
+					url: uploadUrl,
+					filePath: tempFilePath,
+					name: 'file',
+					formData: {
+						openid: openid  // 传递 openid，服务器端用作文件名
 					},
-					fail: (error) => {
-						console.error('获取用户信息失败:', error)
-						uni.showModal({
-							title: '提示',
-							content: '需要授权才能获取您的用户信息',
-							showCancel: false
-						})
-						reject(error)
+					header: {
+						'Authorization': `Bearer ${token}`
+					},
+					success: (res) => {
+						console.log('上传成功，状态码:', res.statusCode);
+						console.log('响应数据:', res.data);
+						if (res.statusCode === 200) {
+							const data = JSON.parse(res.data);
+							resolve(data.avatarUrl);
+						} else {
+							reject(new Error(`上传失败，状态码: ${res.statusCode}`));
+						}
+					},
+					fail: (err) => {
+						console.error('=== 上传失败 ===');
+						console.error('错误对象:', JSON.stringify(err));
+						console.error('请求 URL:', uploadUrl);
+						console.error('文件路径:', tempFilePath);
+						console.error('token:', token ? '已设置' : '未设置');
+						console.error('openid:', openid);
+						console.error('config.BASE_URL:', config.BASE_URL);
+						reject(err);
 					}
-				})
-			})
+				});
+			});
+		},
+
+		async onChooseAvatar(e) {
+			// 用户选择头像
+			const tempAvatarUrl = e.detail.avatarUrl;
+
+			// 先用临时路径做页面预览
+			this.avatarUrl = tempAvatarUrl;
+
+			// 获取用户的 token
+			const token = uni.getStorageSync('token');
+
+			if (!token) {
+				uni.showToast({
+					title: '请先登录',
+					icon: 'none'
+				});
+				return;
+			}
+
+			try {
+				uni.showLoading({ title: '上传中...' });
+
+				// 1. 上传到服务器，获取永久 URL
+				const permanentUrl = await this.uploadAvatarToServer(tempAvatarUrl);
+
+				// 2. 使用永久 URL 更新本地显示
+				this.avatarUrl = permanentUrl;
+
+				// 3. 持久化到本地缓存
+				uni.setStorageSync('userInfo', {
+					nickName: this.userName,
+					avatarUrl: permanentUrl
+				});
+
+				// 4. 同步到全局数据
+				const app = getApp();
+				if (app && app.globalData) {
+					app.globalData.userInfo = {
+						nickName: this.userName,
+						avatarUrl: permanentUrl
+					};
+				}
+
+				// 5. 保存头像URL到后端数据库
+				const userId = uni.getStorageSync('openid') || (app && app.globalData && app.globalData.openid);
+				if (userId) {
+					try {
+						await updateUserProfile({
+							userId: userId,
+							nickName: null, // 昵称不变
+							avatarUrl: permanentUrl // 更新头像URL
+						});
+					} catch (error) {
+						console.error('保存头像URL到服务器失败:', error);
+						// 显示友好的错误提示，但不阻断用户操作
+						uni.showToast({
+							title: '同步到服务器失败，数据已保存到本地',
+							icon: 'none',
+							duration: 2000
+						});
+					}
+				}
+				uni.hideLoading();
+				uni.showToast({
+					title: '头像更新成功',
+					icon: 'success'
+				});
+			} catch (error) {
+				uni.hideLoading();
+				console.error('更新头像失败:', error);
+				uni.showToast({
+					title: error.message || '头像更新失败',
+					icon: 'none'
+				});
+			}
 		}
 	}
 }
@@ -147,103 +252,74 @@ export default {
 
 <style scoped>
 .container {
-	padding: 20rpx 32rpx;
 	background-color: #F8F9FA;
 	min-height: 100vh;
 }
-.header {
+
+/* Custom Navigation Bar */
+.custom-navbar {
+	background-color: #FFFFFF;
+	padding-top: 44px; /* Status bar height */
+	width: 100%;
+}
+
+.navbar-content {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-bottom: 24rpx;
+	padding: 24rpx 32rpx;
 }
-.title {
-	font-size: 48rpx;
+
+.user-info {
+	display: flex;
+	align-items: center;
+	gap: 24rpx;
+}
+
+.avatar-btn {
+	padding: 0;
+	border: none;
+	background: none;
+	width: 96rpx;
+	height: 96rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.avatar {
+	width: 96rpx;
+	height: 96rpx;
+	border-radius: 50%;
+	background-color: #E5E7EB;
+}
+
+.user-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.user-name-input {
+	font-size: 36rpx;
 	font-weight: bold;
 	color: #1A1A1A;
+	margin-bottom: 4rpx;
+	padding: 8rpx 0;
 }
-.save-btn {
-	color: #2563EB;
-	font-size: 32rpx;
+
+.user-level {
+	font-size: 22rpx;
+	color: #6B7280;
+	letter-spacing: 0.5px;
 }
+
 .content {
 	padding: 40rpx;
 	text-align: center;
 }
+
 .placeholder {
 	color: #9CA3AF;
 	font-size: 28rpx;
-}
-
-/* 新增的用户信息样式 */
-.user-info-section {
-	margin-bottom: 40rpx;
-}
-
-.user-card {
-	background: #FFFFFF;
-	border-radius: 20rpx;
-	padding: 40rpx;
-	display: flex;
-	align-items: center;
-	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-}
-
-.user-avatar {
-	width: 120rpx;
-	height: 120rpx;
-	border-radius: 50%;
-	overflow: hidden;
-	position: relative;
-	margin-right: 30rpx;
-}
-
-.avatar-img {
-	width: 100%;
-	height: 100%;
-}
-
-.change-overlay {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background: rgba(0, 0, 0, 0.5);
-	border-radius: 50%;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	opacity: 0;
-	transition: opacity 0.3s;
-}
-
-.user-avatar:hover .change-overlay {
-	opacity: 1;
-}
-
-.overlay-text {
-	color: white;
-	font-size: 24rpx;
-	text-align: center;
-}
-
-.user-details {
-	flex: 1;
-}
-
-.username {
-	display: block;
-	font-size: 36rpx;
-	font-weight: bold;
-	color: #1A1A1A;
-	margin-bottom: 10rpx;
-}
-
-.user-id {
-	display: block;
-	font-size: 28rpx;
-	color: #6B7280;
 }
 </style>

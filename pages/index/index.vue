@@ -2,26 +2,8 @@
 	<view class="page">
 		<!-- Custom Navigation Bar -->
 		<view class="custom-navbar">
-			<view class="navbar-content">
-				<view class="user-info">
-					<button open-type="chooseAvatar" @chooseavatar="onChooseAvatar" class="avatar-btn">
-						<image class="avatar" :src="avatarUrl || '/static/avatar.png'" mode="aspectFill"></image>
-					</button>
-					<view class="user-text">
-						<input
-							type="nickname"
-							class="user-name-input"
-							:value="userName"
-							placeholder="点击输入昵称"
-							@blur="onNicknameChange"
-						/>
-						<text class="user-level">ACADEMIC LEVEL: SENIOR</text>
-					</view>
-				</view>
-				<view class="notification-icon">
-					<text class="icon">🔔</text>
-				</view>
-			</view>
+			
+				<text class="app-title">智练单词</text>
 		</view>
 
 		<!-- Main Content -->
@@ -127,283 +109,10 @@
 				<view class="insight-icon">✨</view>
 			</view>
 
-			<!-- Bottom Spacing for TabBar -->
-			<view style="height: 40rpx;"></view>
+			
 		</scroll-view>
 	</view>
 </template>
-
-<script>
-import { updateUserProfile } from '@/api/user.js'
-import config from '@/config/index.js'
-
-export default {
-	data() {
-		return {
-			userName: '未登录',
-			avatarUrl: ''
-		}
-	},
-	onShow() {
-		// 每次页面显示时从缓存读取用户信息dd
-		const info = uni.getStorageSync('userInfo');
-		if (info && info.nickName) {
-			this.userName = info.nickName;
-			this.avatarUrl = info.avatarUrl || '';
-		} else {
-			const app = getApp();
-			if (app && app.globalData && app.globalData.userInfo) {
-				this.userName = app.globalData.userInfo.nickName || '未登录';
-				this.avatarUrl = app.globalData.userInfo.avatarUrl || '';
-			}
-		}
-	},
-	methods: {
-		/**
-		 * 昵称输入完成事件
-		 */
-		async onNicknameChange(e) {
-			const newNickname = e.detail.value.trim();
-
-			if (!newNickname) {
-				uni.showToast({
-					title: '昵称不能为空',
-					icon: 'none'
-				});
-				return;
-			}
-
-			// 更新显示
-			this.userName = newNickname;
-
-			// 获取用户 openid
-			const app = getApp();
-			const userId = uni.getStorageSync('openid') || (app && app.globalData && app.globalData.openid);
-
-			// 保存到本地缓存
-			const userInfo = {
-				nickName: newNickname,
-				avatarUrl: this.avatarUrl
-			};
-			uni.setStorageSync('userInfo', userInfo);
-
-			// 同步到全局数据
-			if (app && app.globalData) {
-				app.globalData.userInfo = userInfo;
-			}
-
-			// 如果有 userId，同步到服务器
-			if (userId) {
-				try {
-					await updateUserProfile({
-						userId: userId,
-						nickName: newNickname,
-						avatarUrl: null // 头像不变
-					});
-					uni.showToast({
-						title: '昵称已保存',
-						icon: 'success'
-					});
-				} catch (error) {
-					console.error('保存昵称到服务器失败:', error);
-t				// 显示友好的错误提示，但不阻断用户操作
-					uni.showToast({
-						title: '同步到服务器失败，数据已保存到本地',
-						icon: 'none',
-						duration: 2000
-					});
-				}
-			}
-		},
-
-		/**
-		 * 上传头像到服务器
-		 * @param {String} tempFilePath - 临时文件路径
-		 * @returns {Promise<String>} 返回服务器返回的头像 URL
-		 */
-		async uploadAvatarToServer(tempFilePath) {
-			return new Promise((resolve, reject) => {
-				// 从本地存储获取token
-				const token = uni.getStorageSync('token');
-
-				if (!token) {
-					reject(new Error('未登录'));
-					return;
-				}
-
-				// 获取 openid
-				const app = getApp();
-				const openid = uni.getStorageSync('openid') ||
-				               (app && app.globalData && app.globalData.openid);
-
-				if (!openid) {
-					reject(new Error('未获取到用户ID'));
-					return;
-				}
-
-				const uploadUrl = `${config.BASE_URL}/api/user/avatar`;
-				console.log('准备上传到:', uploadUrl);
-				uni.uploadFile({
-					url: uploadUrl,
-					filePath: tempFilePath,
-					name: 'file',
-					formData: {
-						openid: openid  // 传递 openid，服务器端用作文件名
-					},
-					header: {
-						'Authorization': `Bearer ${token}`
-					},
-					success: (res) => {
-						console.log('上传成功，状态码:', res.statusCode);
-						console.log('响应数据:', res.data);
-						if (res.statusCode === 200) {
-							const data = JSON.parse(res.data);
-							resolve(data.avatarUrl);
-							reject(new Error('登录已过期，请重新登录'));
-						} else {
-							reject(new Error(`上传失败，状态码: ${res.statusCode}`));
-						}
-					},
-					fail: (err) => {
-						console.error('=== 上传失败 ===');
-						console.error('错误对象:', JSON.stringify(err));
-						console.error('请求 URL:', uploadUrl);
-						console.error('文件路径:', tempFilePath);
-						console.error('token:', token ? '已设置' : '未设置');
-						console.error('openid:', openid);
-						console.error('config.BASE_URL:', config.BASE_URL);
-						reject(err);
-					}
-				});
-			});
-		},
-
-		async onChooseAvatar(e) {
-
-			// 用户选择头像
-			const tempAvatarUrl = e.detail.avatarUrl;
-
-			// 先用临时路径做页面预览
-			this.avatarUrl = tempAvatarUrl;
-
-			// 获取用户的 token
-			const token = uni.getStorageSync('token');
-
-
-			if (!token) {
-				uni.showToast({
-					title: '请先登录',
-					icon: 'none'
-				});
-				return;
-			}
-
-			try {
-				uni.showLoading({ title: '上传中...' });
-
-				// 1. 上传到服务器，获取永久 URL
-				const permanentUrl = await this.uploadAvatarToServer(tempAvatarUrl);
-
-				// 2. 使用永久 URL 更新本地显示
-				this.avatarUrl = permanentUrl;
-
-				// 3. 持久化到本地缓存
-				uni.setStorageSync('userInfo', {
-					nickName: this.userName,
-					avatarUrl: permanentUrl
-				});
-
-				// 4. 同步到全局数据
-				const app = getApp();
-				if (app && app.globalData) {
-					app.globalData.userInfo = {
-						nickName: this.userName,
-						avatarUrl: permanentUrl
-					};
-				}
-
-				// 5. 保存头像URL到后端数据库
-				const userId = uni.getStorageSync('openid') || (app && app.globalData && app.globalData.openid);
-				if (userId) {
-					try {
-					await updateUserProfile({
-							userId: userId,
-							nickName: null, // 昵称不变
-							avatarUrl: permanentUrl // 更新头像URL
-						});
-					} catch (error) {
-						console.error('保存头像URL到服务器失败:', error);
-					// 显示友好的错误提示，但不阻断用户操作
-						uni.showToast({
-							title: '同步到服务器失败，数据已保存到本地',
-							icon: 'none',
-							duration: 2000
-						});
-
-t			}
-				uni.hideLoading();
-				uni.showToast({
-					title: '头像更新成功',
-					icon: 'success'
-				});
-			} catch (error) {
-				uni.hideLoading();
-				console.error('更新头像失败:', error);
-				uni.showToast({
-					title: error.message || '头像更新失败',
-					icon: 'none'
-				});
-			}
-		},
-		handleAvatarClick() {
-			console.log('=== handleAvatarClick 被调用（备用方案）===');
-			// 如果 open-type="chooseAvatar" 不工作，使用传统方式
-			uni.chooseImage({
-				count: 1,
-				sizeType: ['compressed'],
-				sourceType: ['album', 'camera'],
-				success: (res) => {
-					console.log('chooseImage 成功:', res);
-					// 模拟 chooseavatar 事件的数据结构
-					this.onChooseAvatar({
-						detail: {
-							avatarUrl: res.tempFilePaths[0]
-						}
-					});
-				},
-				fail: (err) => {
-					console.error('chooseImage 失败:', err);
-					uni.showToast({
-						title: '选择图片失败',
-						icon: 'none'
-					});
-				}
-			});
-		},
-		handleCameraScan() {
-			// 使用相机拍照
-			uni.chooseImage({
-				count: 1,
-				sourceType: ['camera'], // 只使用相机
-				success: (res) => {
-					const imagePath = res.tempFilePaths[0];
-					// 拍照后直接跳转到词汇识别页面
-					uni.navigateTo({
-						url: `/pages/scan/RecognitionPage?image=${encodeURIComponent(imagePath)}`
-					});
-				},
-				fail: (err) => {
-					uni.showToast({
-						title: '拍照失败',
-						icon: 'none'
-					});
-					console.error('Camera error:', err);
-				}
-			});
-		}
-	}
-}
-</script>
 
 <style scoped>
 .page {
@@ -417,68 +126,20 @@ t			}
 	background-color: #FFFFFF;
 	padding-top: 44px; /* Status bar height */
 	width: 100%;
+	text-align: center;
 }
 
 .navbar-content {
 	display: flex;
-	justify-content: space-between;
+	justify-content: center;
 	align-items: center;
 	padding: 24rpx 32rpx;
 }
 
-.user-info {
-	display: flex;
-	align-items: center;
-	gap: 24rpx;
-}
-
-.avatar-btn {
-	padding: 0;
-	border: none;
-	background: none;
-	width: 96rpx;
-	height: 96rpx;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.avatar {
-	width: 96rpx;
-	height: 96rpx;
-	border-radius: 50%;
-	background-color: #E5E7EB;
-}
-
-.user-text {
-	display: flex;
-	flex-direction: column;
-}
-
-.user-name-input {
-	font-size: 36rpx;
+.app-title {
+	font-size: 40rpx;
 	font-weight: bold;
 	color: #1A1A1A;
-	margin-bottom: 4rpx;
-	padding: 8rpx 0;
-}
-
-.user-level {
-	font-size: 22rpx;
-	color: #6B7280;
-	letter-spacing: 0.5px;
-}
-
-.notification-icon {
-	width: 80rpx;
-	height: 80rpx;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.notification-icon .icon {
-	font-size: 44rpx;
 }
 
 /* Main Content */
@@ -741,3 +402,58 @@ t			}
 	opacity: 0.5;
 }
 </style>
+<script>
+export default {
+	data() {
+		return {}
+	},
+	onShow() {
+		// 从 RecognitionPage 返回时接收数据
+		const exerciseData = uni.getStorageSync('exerciseData');
+		if (exerciseData) {
+			console.log('=== Received exercise data from RecognitionPage ===');
+			console.log('Words:', exerciseData.words);
+			console.log('Exercise Types:', exerciseData.exerciseTypes);
+			console.log('Image Title:', exerciseData.imageTitle);
+			console.log('Total selected words:', exerciseData.words.length);
+
+			// 清除缓存
+			uni.removeStorageSync('exerciseData');
+		}
+	},
+	methods: {
+		handleCameraScan() {
+			console.log('Camera scan button clicked');
+			// 使用相机拍照
+			uni.chooseImage({
+				count: 1,
+				sourceType: ['camera'], // 只使用相机
+				success: (res) => {
+					const imagePath = res.tempFilePaths[0];
+					console.log('Image captured:', imagePath);
+					// 拍照后直接跳转到词汇识别页面
+					const targetUrl = `/pages/scan/RecognitionPage?image=${encodeURIComponent(imagePath)}`;
+					console.log('Navigating to:', targetUrl);
+					uni.navigateTo({
+						url: targetUrl,
+						success: () => {
+							console.log('Navigation successful');
+						},
+						fail: (err) => {
+							console.error('Navigation failed:', err);
+						}
+					});
+				},
+				fail: (err) => {
+					uni.showToast({
+						title: '拍照失败',
+						icon: 'none'
+					});
+					console.error('Camera error:', err);
+				}
+			});
+		}
+	}
+}
+</script>
+
