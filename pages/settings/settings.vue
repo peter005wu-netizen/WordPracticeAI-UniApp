@@ -30,6 +30,7 @@
 <script>
 import { updateUserProfile } from '@/api/user.js'
 import config from '@/config/index.js'
+import { getToken, getUserId, getUserInfo, saveUserInfo } from '@/utils/auth.js'
 
 export default {
 	data() {
@@ -40,16 +41,10 @@ export default {
 	},
 	onShow() {
 		// 每次页面显示时从缓存读取用户信息
-		const info = uni.getStorageSync('userInfo');
-		if (info && info.nickName) {
+		const info = getUserInfo();
+		if (info?.nickName) {
 			this.userName = info.nickName;
 			this.avatarUrl = info.avatarUrl || '';
-		} else {
-			const app = getApp();
-			if (app && app.globalData && app.globalData.userInfo) {
-				this.userName = app.globalData.userInfo.nickName || '未登录';
-				this.avatarUrl = app.globalData.userInfo.avatarUrl || '';
-			}
 		}
 	},
 	methods: {
@@ -70,23 +65,14 @@ export default {
 			// 更新显示
 			this.userName = newNickname;
 
-			// 获取用户 openid
-			const app = getApp();
-			const userId = uni.getStorageSync('openid') || (app && app.globalData && app.globalData.openid);
-
-			// 保存到本地缓存
-			const userInfo = {
+			// 保存到本地缓存和全局
+			saveUserInfo({
 				nickName: newNickname,
 				avatarUrl: this.avatarUrl
-			};
-			uni.setStorageSync('userInfo', userInfo);
-
-			// 同步到全局数据
-			if (app && app.globalData) {
-				app.globalData.userInfo = userInfo;
-			}
+			});
 
 			// 如果有 userId，同步到服务器
+			const userId = getUserId();
 			if (userId) {
 				try {
 					await updateUserProfile({
@@ -117,18 +103,14 @@ export default {
 		 */
 		async uploadAvatarToServer(tempFilePath) {
 			return new Promise((resolve, reject) => {
-				// 从本地存储获取token
-				const token = uni.getStorageSync('token');
+				const token = getToken();
 
 				if (!token) {
 					reject(new Error('未登录'));
 					return;
 				}
 
-				// 获取 openid
-				const app = getApp();
-				const openid = uni.getStorageSync('openid') ||
-				               (app && app.globalData && app.globalData.openid);
+				const openid = getUserId();
 
 				if (!openid) {
 					reject(new Error('未获取到用户ID'));
@@ -178,8 +160,7 @@ export default {
 			// 先用临时路径做页面预览
 			this.avatarUrl = tempAvatarUrl;
 
-			// 获取用户的 token
-			const token = uni.getStorageSync('token');
+			const token = getToken();
 
 			if (!token) {
 				uni.showToast({
@@ -198,23 +179,14 @@ export default {
 				// 2. 使用永久 URL 更新本地显示
 				this.avatarUrl = permanentUrl;
 
-				// 3. 持久化到本地缓存
-				uni.setStorageSync('userInfo', {
+				// 3. 持久化到本地缓存和全局
+				saveUserInfo({
 					nickName: this.userName,
 					avatarUrl: permanentUrl
 				});
 
-				// 4. 同步到全局数据
-				const app = getApp();
-				if (app && app.globalData) {
-					app.globalData.userInfo = {
-						nickName: this.userName,
-						avatarUrl: permanentUrl
-					};
-				}
-
 				// 5. 保存头像URL到后端数据库
-				const userId = uni.getStorageSync('openid') || (app && app.globalData && app.globalData.openid);
+				const userId = getUserId();
 				if (userId) {
 					try {
 						await updateUserProfile({

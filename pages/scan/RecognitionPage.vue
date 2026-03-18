@@ -65,10 +65,6 @@
 						<text>阅读题</text>
 					</label>
 					<label class="type-option">
-						<checkbox value="matching" :checked="exerciseTypes.matching" />
-						<text>连线题</text>
-					</label>
-					<label class="type-option">
 						<checkbox value="single-choice" :checked="exerciseTypes.singleChoice" />
 						<text>选择题</text>
 					</label>
@@ -107,7 +103,6 @@ export default {
 				en2cn: true,
 				fillBlank: true,
 				reading: true,
-				matching: true,
 				singleChoice: true,
 				translation: true
 			},
@@ -155,7 +150,6 @@ export default {
 				en2cn: values.includes('en2cn'),
 				fillBlank: values.includes('fillBlank'),
 				reading: values.includes('reading'),
-				matching: values.includes('matching'),
 				singleChoice: values.includes('single-choice'),
 				translation: values.includes('translation')
 			};

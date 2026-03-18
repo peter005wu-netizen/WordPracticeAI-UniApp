@@ -1,4 +1,5 @@
 import config from '../config/index.js';
+import { getToken } from '../utils/auth.js';
 
 /**
  * 分析图片中的词汇
@@ -10,7 +11,7 @@ export function analyzeImage(imagePath) {
 		const startTime = Date.now();
 
 		// 获取 token
-		const token = uni.getStorageSync('token');
+		const token = getToken();
 		if (!token) {
 			reject({
 				error: 'No token',
@@ -89,7 +90,7 @@ export function generateExercises(words, exerciseTypes, imageTitle) {
 		const startTime = Date.now();
 
 		// 获取 token
-		const token = uni.getStorageSync('token');
+		const token = getToken();
 		console.log('=== Token Debug ===');
 		console.log('Token retrieved:', token);
 		console.log('Token type:', typeof token);
